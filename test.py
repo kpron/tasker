@@ -6,10 +6,19 @@ import time
 from datetime import datetime
 from yaml import load
 import logging
+from ConfigParser import SafeConfigParser
 
-logger = logging.getLogger('spam_application')
+parser = SafeConfigParser()
+parser.read('config.ini')
+
+logfile = parser.get('tasker', 'logfile')
+inputfile = parser.get('tasker', 'tasksfile')
+outputfile = parser.get('tasker', 'outfile')
+pidfile = parser.get('tasker', 'pidfile')
+
+logger = logging.getLogger('tasker')
 logger.setLevel(logging.DEBUG)
-fh = logging.FileHandler('/tmp/tasker.log')
+fh = logging.FileHandler(logfile)
 fh.setLevel(logging.DEBUG)
 logger.addHandler(fh)
 
@@ -60,8 +69,8 @@ class Tasker(Daemon):
     def run(self):
         while True:
             try:
-                inputfile = '/tmp/tasks.yaml'
-                outputfile = '/tmp/tasker.out'
+                #inputfile = '/tmp/tasks.yaml'
+                #outputfile = '/tmp/tasker.out'
                 with open(inputfile, "r") as f:
                     data = load(f)
                 active_tasks = []
@@ -77,20 +86,25 @@ class Tasker(Daemon):
                 exit(e)
 
 if __name__ == "__main__":
-    daemon = Tasker('/tmp/tasker.pid')
-    if len(sys.argv) == 2:
-        if 'start' == sys.argv[1]:
-            daemon.start()
-        elif 'stop' == sys.argv[1]:
-            daemon.stop()
-        elif 'restart' == sys.argv[1]:
-            daemon.restart()
-        elif 'status' == sys.argv[1]:
-            daemon.status()
+
+    try:
+        daemon = Tasker(pidfile)
+        if len(sys.argv) == 2:
+            if 'start' == sys.argv[1]:
+                daemon.start()
+            elif 'stop' == sys.argv[1]:
+                daemon.stop()
+            elif 'restart' == sys.argv[1]:
+                daemon.restart()
+            elif 'status' == sys.argv[1]:
+                daemon.status()
+            else:
+                print("Unknown command")
+                sys.exit(2)
+            sys.exit(0)
         else:
-            print("Unknown command")
+            print("usage: %s start|stop|restart|status" % sys.argv[0])
             sys.exit(2)
-        sys.exit(0)
-    else:
-        print("usage: %s start|stop|restart|status" % sys.argv[0])
-        sys.exit(2)
+    except Exception as e:
+        logger.fatal(e)
+        exit(e)
