@@ -3,6 +3,7 @@
 from contrib.classes import Daemon
 import sys
 import time
+import os
 from datetime import datetime
 from yaml import load
 import logging
@@ -11,9 +12,11 @@ from ConfigParser import SafeConfigParser
 parser = SafeConfigParser()
 parser.read('config.ini')
 
-logfile = parser.get('tasker', 'logfile')
-inputfile = parser.get('tasker', 'tasksfile')
-outputfile = parser.get('tasker', 'outfile')
+md = os.getcwd() + '/'
+
+logfile = md + parser.get('tasker', 'logfile')
+inputfile = md + parser.get('tasker', 'tasksfile')
+outputfile = md + parser.get('tasker', 'outfile')
 pidfile = parser.get('tasker', 'pidfile')
 
 logger = logging.getLogger('tasker')
@@ -69,8 +72,6 @@ class Tasker(Daemon):
     def run(self):
         while True:
             try:
-                #inputfile = '/tmp/tasks.yaml'
-                #outputfile = '/tmp/tasker.out'
                 with open(inputfile, "r") as f:
                     data = load(f)
                 active_tasks = []
@@ -86,7 +87,6 @@ class Tasker(Daemon):
                 exit(e)
 
 if __name__ == "__main__":
-
     try:
         daemon = Tasker(pidfile)
         if len(sys.argv) == 2:
