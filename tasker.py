@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 
-from contrib.classes import Daemon
-import sys
 import time
 import os
+import sys
 from datetime import datetime
 from yaml import load
 import logging
@@ -12,16 +11,14 @@ from ConfigParser import SafeConfigParser
 parser = SafeConfigParser()
 parser.read('config.ini')
 
-md = os.getcwd() + '/'
+exec_dir = os.getcwd() + '/'
 
-logfile = md + parser.get('tasker', 'logfile')
-inputfile = md + parser.get('tasker', 'tasksfile')
-outputfile = md + parser.get('tasker', 'outfile')
-pidfile = parser.get('tasker', 'pidfile')
+inputfile = exec_dir + parser.get('tasker', 'tasksfile')
+outputfile = exec_dir + parser.get('tasker', 'outfile')
 
 logger = logging.getLogger('tasker')
 logger.setLevel(logging.DEBUG)
-fh = logging.FileHandler(logfile)
+fh = logging.FileHandler(sys.stderr)
 fh.setLevel(logging.DEBUG)
 logger.addHandler(fh)
 
@@ -68,43 +65,18 @@ class Task(object):
         pass
 
 
-class Tasker(Daemon):
-    def run(self):
-        while True:
-            try:
-                with open(inputfile, "r") as f:
-                    data = load(f)
-                active_tasks = []
-                for task in data:
-                    t = Task(task)
-                    if t.date_in():
-                        active_tasks.append(t.get_name())
-                open(outputfile, 'w').write("%s" % active_tasks)
-                f.close()
-                time.sleep(1)
-            except Exception as e:
-                logger.fatal(e)
-                exit(e)
-
-if __name__ == "__main__":
+while True:
     try:
-        daemon = Tasker(pidfile)
-        if len(sys.argv) == 2:
-            if 'start' == sys.argv[1]:
-                daemon.start()
-            elif 'stop' == sys.argv[1]:
-                daemon.stop()
-            elif 'restart' == sys.argv[1]:
-                daemon.restart()
-            elif 'status' == sys.argv[1]:
-                daemon.status()
-            else:
-                print("Unknown command")
-                sys.exit(2)
-            sys.exit(0)
-        else:
-            print("usage: %s start|stop|restart|status" % sys.argv[0])
-            sys.exit(2)
+        with open(inputfile, "r") as f:
+            data = load(f)
+        active_tasks = []
+        for task in data:
+            t = Task(task)
+            if t.date_in():
+                active_tasks.append(t.get_name())
+        open(outputfile, 'w').write("%s" % active_tasks)
+        f.close()
+        time.sleep(1)
     except Exception as e:
-        logger.fatal(e)
+        logger.debug(e)
         exit(e)
