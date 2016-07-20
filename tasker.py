@@ -18,7 +18,7 @@ outputfile = exec_dir + parser.get('tasker', 'outfile')
 
 logger = logging.getLogger('tasker')
 logger.setLevel(logging.DEBUG)
-fh = logging.FileHandler(sys.stderr)
+fh = logging.FileHandler(str(sys.stderr))
 fh.setLevel(logging.DEBUG)
 logger.addHandler(fh)
 
@@ -60,10 +60,6 @@ class Task(object):
             return True
         else:
             return False
-
-    def function(self):
-        pass
-
 
 while True:
     try:
