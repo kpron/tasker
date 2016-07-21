@@ -3,10 +3,10 @@
 import time
 import os
 from datetime import datetime
-from yaml import load, dump
 import logging
 from ConfigParser import SafeConfigParser
 import telepot
+from telepot.namedtuple import ReplyKeyboardMarkup, KeyboardButton
 import psycopg2
 from contrib.sqlquery import *
 
@@ -45,6 +45,25 @@ logger.setLevel(loglevel)
 bot = telepot.Bot(token)
 
 
+def handle(msg):
+    chat_id = msg['chat']['id']
+    command = msg['text']
+
+    logger.debug('Got command: %s' % command)
+
+    if command == 'Active tasks':
+        cursor.execute(current_query, {'now': current_time})
+        result = cursor.fetchall()
+        tasks = [task[1] for task in result]
+        bot.sendMessage(chat_id, str(tasks))
+    elif command == 'tasks':
+        markup = ReplyKeyboardMarkup(
+            keyboard=[
+                [KeyboardButton(text='Active tasks')]
+            ])
+        bot.sendMessage(chat_id, 'Custom keyboard', reply_markup=markup)
+
+
 class Task(object):
     """Simple task class. Has few methods."""
 
@@ -77,6 +96,9 @@ try:
 except:
     print("I am unable to connect to the database")
 cursor = conn.cursor()
+
+bot.message_loop(handle)
+logger.info('kpronbot listening ...')
 
 while True:
     try:
