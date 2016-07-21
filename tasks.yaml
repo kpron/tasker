@@ -1,12 +1,23 @@
 - Tasker development:
-    start: "10:00"
-    end: "19:00"
-- Learning python:
-    start: "10:00"
-    end: "19:00"
+    end: '19:00'
+    notify: null
+    start: '10:00'
 - Be better:
-    start: "13:00"
-    end: "14:00"
+    end: '20:00'
+    notify: null
+    start: '13:00'
+- Learning python:
+    end: '19:00'
+    notify:
+      sent: true
+    start: '10:00'
 - Trying to survive:
-    start: "8:00"
-    end: "23:00"
+    end: '23:00'
+    notify:
+      sent: true
+    start: '15:02'
+- Smoke:
+    end: '15:25'
+    notify:
+      sent: true
+    start: '15:20'
