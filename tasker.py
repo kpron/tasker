@@ -7,6 +7,8 @@ from yaml import load, dump
 import logging
 from ConfigParser import SafeConfigParser
 import telepot
+import psycopg2
+from contrib.sqlquery import *
 
 parser = SafeConfigParser()
 parser.read('config.ini')
@@ -21,6 +23,16 @@ loglevel = parser.get('tasker', 'loglevel')
 # Notifier variables
 id = parser.get('tasker-notifier', 'telegram_id')
 token = parser.get('tasker-notifier', 'bot_token')
+
+# database variables
+dbhost = parser.get('pgsql', 'host')
+dbname = parser.get('pgsql', 'db')
+dbuser = parser.get('pgsql', 'user')
+dbpassword = parser.get('pgsql', 'password')
+
+connstring = "dbname=%s user=%s host=%s password=%s" % (
+    dbname, dbuser, dbhost, dbpassword
+)
 
 logging.basicConfig(
     format='%(levelname)s [%(asctime)s]:%(message)s',
@@ -39,42 +51,15 @@ class Task(object):
     def __init__(self, data):
         super(Task, self).__init__()
         self.data = data
-        self.name = ''.join(self.data.keys())
-        self.info = self.data[self.name]
-        self.start = self.info["start"]
-        self.end = self.info["end"]
-        self.nows = time.strftime("%H:%M")
-        self.nowd = datetime.strptime(self.nows, "%H:%M")
-        self.notify = self.info["notify"]
-
-    def get_time(self):
-        """Return task time interval as string "start - end" """
-        return("%s - %s" % (self.start, self.end))
-
-    def get_name(self):
-        """Return task name as a string"""
-        return(self.name)
-
-    def get_data(self):
-        """Return task data (all of this)"""
-        return(self.data)
-
-    def get_info(self):
-        """Return task info (all of this, except name)"""
-        return(self.info)
-
-    def date_in(self):
-        """Return bool value. True if task is active and False if not."""
-        self.startd = datetime.strptime(self.start, "%H:%M")
-        self.endd = datetime.strptime(self.end, "%H:%M")
-        if self.nowd >= self.startd and self.nowd <= self.endd:
-            return True
-        else:
-            return False
+        self.id = self.data[0]
+        self.name = self.data[1]
+        self.descr = self.data[2]
+        self.notify = self.data[5]
+        self.sent = self.data[6]
 
     def notify_need(self):
         if self.notify:
-            if not self.notify["sent"]:
+            if not self.sent:
                 return(True)
             else:
                 return(False)
@@ -83,36 +68,36 @@ class Task(object):
 
     def mark_sent(self):
         if self.notify:
-            if not self.notify["sent"]:
-                changed = self.data
-                changed[self.name]["notify"]["sent"] = True
-                return(changed)
+            if not self.sent:
+                cursor.execute(sent_query, {'id': self.id, 'status': True})
+
+try:
+    conn = psycopg2.connect(connstring)
+    conn.autocommit = True
+except:
+    print("I am unable to connect to the database")
+cursor = conn.cursor()
 
 while True:
     try:
-        with open(inputfile, "r") as f:
-            data = load(f)
-            logger.debug(data)
-        active_tasks = [time.strftime("%H:%M:%S")]
-        for task in data:
-            t = Task(task)
-            if t.date_in():
-                if t.notify_need():
-                    logger.info("Need notify for - %s" % t.get_name())
-                    if bot.sendMessage(id, t.get_name()):
-                        logger.info("Notify sent.")
-                        data.remove(task)
-                        data.append(t.mark_sent())
-                    else:
-                        logger.info("Error while sending notify")
-                else:
-                    active_tasks.append([t.get_name()])
-        # logger.debug(dump(data, default_flow_style=False))
-        with open(inputfile, "w") as w:
-            w.write(dump(data, default_flow_style=False))
-            w.close()
-        f.close()
-        time.sleep(10)
+        current_time = datetime.now()
+        cursor.execute(current_query, {'now': current_time})
+        tasks = cursor.fetchall()
+        for item in tasks:
+            task = Task(item)
+            if task.notify_need():
+                try:
+                    bot.sendMessage(
+                        id,
+                        "%s\n%s" % (
+                            task.name, task.descr
+                        )
+                    )
+                except Exception as sent:
+                    logger.error(sent)
+                finally:
+                    task.mark_sent()
+        time.sleep(1)
     except Exception as e:
         logger.debug(e)
         exit(e)
