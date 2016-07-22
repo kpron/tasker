@@ -25,13 +25,17 @@ current_time = datetime.now()
 
 cursor = conn.cursor()
 
-cursor.execute(current_query, {'now': current_time})
-tasks = cursor.fetchall()
-print(tasks)
-
-cursor.execute(sent_query, {'id': 1, 'status': False})
-cursor.execute(sent_query, {'id': 2, 'status': True})
-
-cursor.execute(current_query, {'now': current_time})
-tasks = cursor.fetchall()
-print(tasks)
+name = 'Back to work'
+descr = 'A lot of information in this field. Really big string.'
+start = '2016-07-22 10:30:00'
+stop = '2016-07-22 11:00:00'
+notify_need = 'True'
+notify_send = 'False'
+cursor.execute(insert_query, {
+    'name': name,
+    'descr': descr,
+    'start': start,
+    'stop': stop,
+    'notify_need': notify_need,
+    'notify_send': notify_send
+})

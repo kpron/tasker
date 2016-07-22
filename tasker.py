@@ -54,8 +54,13 @@ def handle(msg):
     if command == 'Active tasks':
         cursor.execute(current_query, {'now': current_time})
         result = cursor.fetchall()
-        tasks = [task[1] for task in result]
-        bot.sendMessage(chat_id, str(tasks))
+        tasks = [[task[1], task[2]] for task in result]
+        text = 'Active tasks for now (%s)\n' % (
+            current_time.strftime("%Y-%m-%d %H:%M")
+        )
+        for task in tasks:
+            text += '%s - %s\n' % (task[0], task[1])
+        bot.sendMessage(chat_id, str(text))
     elif command == 'tasks':
         markup = ReplyKeyboardMarkup(
             keyboard=[
