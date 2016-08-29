@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 import time
 import os
@@ -45,6 +46,15 @@ logger.setLevel(loglevel)
 bot = telepot.Bot(token)
 
 
+def getinfo(data):
+    info = dict()
+    info['fname'] = data.get('first_name', 'Not set')
+    info['lname'] = data.get('last_name', 'Not set')
+    info['nick'] = data.get('username', 'Not set')
+    info['id'] = data.get('id', 'Not set')
+    return info
+
+
 def handle(msg):
     chat_id = msg['chat']['id']
     command = msg['text']
@@ -61,12 +71,23 @@ def handle(msg):
         for task in tasks:
             text += '%s - %s\n' % (task[0], task[1])
         bot.sendMessage(chat_id, str(text))
-    elif command == 'tasks':
+    elif command == 'Hi':
         markup = ReplyKeyboardMarkup(
             keyboard=[
-                [KeyboardButton(text='Active tasks')]
+                [KeyboardButton(text='Active tasks'),
+                    KeyboardButton(text='info')]
             ])
-        bot.sendMessage(chat_id, 'Custom keyboard', reply_markup=markup)
+        bot.sendMessage(chat_id, 'Press the button', reply_markup=markup)
+    elif command == 'info':
+        info = getinfo(msg['from'])
+        info_message = u'''Немного информации -
+Name: %(fname)s
+Last name: %(lname)s
+Nickname: %(nick)s
+Telegram ID: %(id)s''' % (
+            info
+        )
+        bot.sendMessage(chat_id, info_message)
 
 
 class Task(object):
