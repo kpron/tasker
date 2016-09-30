@@ -1,2 +1,5 @@
+.gitignore
 __pucache__/*
 *.pyc
+run/*
+logs/*
