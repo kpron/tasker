@@ -80,14 +80,21 @@ def handle(msg):
         result = cursor.fetchall()
         if not result:
             cursor.execute(add_new_user, info)
-            logger.debug('Added new user - nickname: %(nick)s (%(fname)s %(lname)s)' % info)
+            logger.debug(
+                'Added new user - nickname: %(nick)s (%(fname)s %(lname)s)' % (
+                    info
+                )
+            )
         markup = ReplyKeyboardMarkup(
             keyboard=[
-                [KeyboardButton(text='Active tasks'), KeyboardButton(text='New task')]
-                #    KeyboardButton(text='info')]
-                #[KeyboardButton(text='info')]
+                [
+                    KeyboardButton(text='Active tasks'),
+                    KeyboardButton(text='New task')
+                ]
             ])
-        bot.sendMessage(chat_id, 'Session has been initiated', reply_markup=markup)
+        bot.sendMessage(
+            chat_id, 'Session has been initiated', reply_markup=markup
+        )
     elif command == 'info':
         info = getinfo(msg['from'])
         info_message = u'''Немного информации -
@@ -101,7 +108,11 @@ Telegram ID: %(id)s''' % (
         result = cursor.fetchall()
         if not result:
             cursor.execute(add_new_user, info)
-            logger.debug('Added new user - Nick: %(nick)s (%(fname)s %(lname)s)m ' % info)
+            logger.debug(
+                'Added new user - Nick: %(nick)s (%(fname)s %(lname)s)m ' % (
+                    info
+                )
+            )
         bot.sendMessage(chat_id, info_message)
 
 
@@ -130,6 +141,7 @@ class Task(object):
         if self.notify:
             if not self.sent:
                 cursor.execute(sent_query, {'id': self.id, 'status': True})
+
 
 try:
     conn = psycopg2.connect(connstring)
