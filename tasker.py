@@ -3,7 +3,7 @@
 
 import time
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 import logging
 from ConfigParser import SafeConfigParser
 import telepot
@@ -20,6 +20,7 @@ exec_dir = os.getcwd() + '/'
 inputfile = exec_dir + parser.get('tasker', 'tasksfile')
 outputfile = exec_dir + parser.get('tasker', 'outfile')
 loglevel = parser.get('tasker', 'loglevel')
+src_dir = parser.get('tasker', 'srs_dir')
 
 # Notifier variables
 id = parser.get('tasker-notifier', 'telegram_id')
@@ -38,7 +39,7 @@ connstring = "dbname=%s user=%s host=%s password=%s" % (
 logging.basicConfig(
     format='%(levelname)s [%(asctime)s]:%(message)s',
     level=logging.DEBUG,
-    filename='/home/kpron/kpronProjects/tasker/logs/tasker.log'
+    filename='%s/logs/tasker.log' % src_dir
 )
 logger = logging.getLogger('tasker')
 logger.setLevel(loglevel)
@@ -72,7 +73,7 @@ def handle(msg):
             text += '%s - %s\n' % (task[0], task[1])
         bot.sendMessage(chat_id, str(text))
     elif command == 'New task':
-        text = 'Enter the task name'
+        text = 'Example:\n<task name>/<description>/<begin>/<end>/nn/ns'
         bot.sendMessage(chat_id, str(text), reply_markup=None)
     elif command == '/start':
         info = getinfo(msg['from'])
@@ -114,6 +115,22 @@ Telegram ID: %(id)s''' % (
                 )
             )
         bot.sendMessage(chat_id, info_message)
+    else:
+        mlist = msg['text'].split('/')
+        task = {}
+        task['name'] = mlist[0]
+        try:
+            task['descr'] = mlist[1] or 'Non set'
+        except IndexError:
+            task['descr'] = 'Non set'
+        logger.debug('name - %(name)s\ndesc - %(descr)s' % task)
+        task['start'] = datetime.now()
+        task['stop'] = datetime.now() + timedelta(1*365/12)
+        task['notify_need'] = True
+        task['notify_send'] = False
+        cursor.execute(insert_query, task)
+        result = cursor.fetchall()
+        bot.sendMessage(chat_id, '%s - task created' % task['name'])
 
 
 class Task(object):
