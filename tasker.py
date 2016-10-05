@@ -119,7 +119,7 @@ def keyboardtasks(msg):
                 callback_data="desc %s" % TASK[0]
             ),
             InlineKeyboardButton(
-                text="done",
+                text="done \xE2\x98\x91",
                 callback_data="done %s" % (
                     TASK[0]
                 )
@@ -160,8 +160,7 @@ def handle(msg):
         markup = ReplyKeyboardMarkup(
             keyboard=[
                 [
-                    KeyboardButton(text='Active tasks'),
-                    KeyboardButton(text='New task')
+                    KeyboardButton(text='Active tasks')
                 ]
             ])
         bot.sendMessage(
@@ -175,9 +174,6 @@ def handle(msg):
         mlist = msg['text'].split('\n')
         task = {}
         task['name'] = mlist[0].strip()
-        logger.debug(len(task['name'].encode('utf-8')))
-        if len(task['name'].encode('utf-8')) > 20:
-            bot.sendMessage(chat_id, 'Too long name, need 20 bytes.')
         try:
             task['descr'] = mlist[1].strip()
         except IndexError:
@@ -187,9 +183,9 @@ def handle(msg):
             if start == '1':
                 starttime = datetime.now() + timedelta(hours=1)
             else:
-                starttime = datetime.now() + timedelta(seconds=5)
+                starttime = datetime.now() - timedelta(seconds=5)
         except IndexError:
-            starttime = datetime.now() + timedelta(seconds=5)
+            starttime = datetime.now() - timedelta(seconds=5)
         task['start'] = starttime
         task['stop'] = datetime.now() + timedelta(hours=24)
         task['notify_need'] = True
@@ -198,7 +194,9 @@ def handle(msg):
         cursor.execute(insert_query, task)
         conn.commit()
         logger.debug('%s task created' % task['name'])
-        bot.sendMessage(chat_id, '%s - task created' % task['name'])
+        tasks = keyboardtasks(msg)['tasks']
+        keyboard = keyboardtasks(msg)['kb']
+        basekeyboard(chat_id, keyboard, tasks)
 
 
 def on_callback_query(msg):
