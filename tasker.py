@@ -12,6 +12,7 @@ from telepot.namedtuple import (
     InlineKeyboardMarkup, InlineKeyboardButton)
 import psycopg2
 from contrib.sqlquery import *
+from contrib.pr import PR
 
 parser = SafeConfigParser()
 parser.read('config.ini')
@@ -99,7 +100,7 @@ def getasks(msg):
     if not result:
         tasks = []
     else:
-        tasks = [[task[0], task[1], task[2]] for task in result]
+        tasks = [[task[0], task[1], task[2], task[9]] for task in result]
     return tasks
 
 
@@ -112,13 +113,14 @@ def markasdone(taskid):
 
 def keyboardtasks(msg):
     tasks = getasks(msg)
+    logger.debug(tasks)
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
         [
             InlineKeyboardButton(
-                text=TASK[1],
-                callback_data="desc %s" % TASK[0]
+                text='%s %s' % (TASK[1], PR[TASK[3]]['icon']),
+                callback_data='desc %s' % TASK[0]
             )
-        ] for TASK in tasks
+        ] for TASK in sorted(tasks, key=lambda x: x[3], reverse=True)
     ])
     return {'tasks': tasks, 'kb': keyboard}
 
@@ -242,10 +244,12 @@ def on_callback_query(msg):
         cursor.execute(get_task_by_id, {'id': taskid})
         task_data = cursor.fetchall()
         keyboard = pertaskeyboard(msg, taskid)['kb']
+        logger.debug(task_data)
         try:
-            bot.editMessageText(ormsg, text='Задача:\n\n*%s*\n_%s_' % (
+            bot.editMessageText(ormsg, text='Задача:\n\n*%s*\n_%s_\n\n`%s`' % (
                 task_data[0][1],
                 task_data[0][2],
+                'Приоритет: %s' % PR[task_data[0][9]]['text']
             ),
                 parse_mode='markdown',
                 reply_markup=keyboard
