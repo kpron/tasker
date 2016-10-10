@@ -125,7 +125,7 @@ def keyboardtasks(msg):
     return {'tasks': tasks, 'kb': keyboard}
 
 
-def pertaskeyboard(msg, tid):
+def pertaskeyboard(msg, tid, prior):
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
         [
             InlineKeyboardButton(
@@ -134,15 +134,32 @@ def pertaskeyboard(msg, tid):
                     tid
                 )
             )
-        ],
+        ] + genprbt('top', prior, tid),
         [
             InlineKeyboardButton(
                 text=u'back \u25C0\uFE0F',
                 callback_data="back %s" % tid
             )
-        ]
+        ] + genprbt('down', prior, tid)
     ])
     return {'kb': keyboard}
+
+
+def genprbt(level, pr, tid):
+    if pr >= 2 and level == 'down':
+        button = [InlineKeyboardButton(
+            text='decrease',
+            callback_data="down %s" % tid
+        )]
+        return button
+    elif pr <= 2 and level == 'top':
+        button = [InlineKeyboardButton(
+            text='raise',
+            callback_data="up %s" % tid
+        )]
+        return button
+    else:
+        return []
 
 
 def mainboard(msg, ormsg):
@@ -167,6 +184,45 @@ def basekeyboard(chat_id, keyboard, tasks):
     else:
         message_text = "Нет активных задач."
     bot.sendMessage(chat_id, message_text, reply_markup=keyboard)
+
+
+def descboard(taskid, msg, ormsg):
+    cursor.execute(get_task_by_id, {'id': taskid})
+    task_data = cursor.fetchall()
+    prior = task_data[0][9]
+    keyboard = pertaskeyboard(msg, taskid, prior)['kb']
+    try:
+        bot.editMessageText(ormsg, text='Задача:\n\n*%s*\n_%s_\n\n`%s`' % (
+            task_data[0][1],
+            task_data[0][2],
+            'Приоритет: %s' % PR[prior]['text']
+        ),
+            parse_mode='markdown',
+            reply_markup=keyboard
+        )
+    except Exception as e:
+        logger.debug('Exception: %s' % e)
+        pass
+
+
+def prshift(direct, tid):
+    logger.debug('CHANGE PR')
+    cursor.execute(get_task_by_id, {'id': tid})
+    task_data = cursor.fetchall()
+    prior = task_data[0][9]
+    if direct == 'up':
+        if (prior + 1) > 3:
+            logger.debug('pizda break PR>3')
+            return 'PR fail'
+        QUERY = pr_up_query
+    elif direct == 'down':
+        if (prior - 1) < 1:
+            logger.debug('pizda break PR<1')
+            return 'PR fail'
+        QUERY = pr_down_query
+    cursor.execute(QUERY, {"id": tid})
+    conn.commit()
+    logger.debug('PR CHANGED for - %s' % tid)
 
 
 def handle(msg):
@@ -203,7 +259,7 @@ def handle(msg):
         keyboard = keyboardtasks(msg)['kb']
         basekeyboard(chat_id, keyboard, tasks)
     else:
-        mlist = msg['text'].split('\n')
+        mlist = msg['text'].split('\n', 1)
         task = {}
         task['name'] = mlist[0].strip()
         try:
@@ -241,24 +297,15 @@ def on_callback_query(msg):
         markasdone(taskid)
         mainboard(msg, ormsg)
     elif job == "desc":
-        cursor.execute(get_task_by_id, {'id': taskid})
-        task_data = cursor.fetchall()
-        keyboard = pertaskeyboard(msg, taskid)['kb']
-        logger.debug(task_data)
-        try:
-            bot.editMessageText(ormsg, text='Задача:\n\n*%s*\n_%s_\n\n`%s`' % (
-                task_data[0][1],
-                task_data[0][2],
-                'Приоритет: %s' % PR[task_data[0][9]]['text']
-            ),
-                parse_mode='markdown',
-                reply_markup=keyboard
-            )
-        except Exception as e:
-            logger.debug('Exception: %s' % e)
-            pass
+        descboard(taskid, msg, ormsg)
     elif job == "back":
         mainboard(msg, ormsg)
+    elif job == "up":
+        prshift('up', taskid)
+        descboard(taskid, msg, ormsg)
+    elif job == "down":
+        prshift('down', taskid)
+        descboard(taskid, msg, ormsg)
 
 
 class Task(object):

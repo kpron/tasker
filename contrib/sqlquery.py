@@ -70,3 +70,17 @@ get_task_by_id = """
                WHERE
                   id = %(id)s
 ;"""
+
+pr_down_query = """
+             UPDATE tasks
+             SET pr = pr - 1
+             WHERE
+                 id = %(id)s
+;"""
+
+pr_up_query = """
+             UPDATE tasks
+             SET pr = pr + 1
+             WHERE
+                 id = %(id)s
+;"""
