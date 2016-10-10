@@ -117,16 +117,46 @@ def keyboardtasks(msg):
             InlineKeyboardButton(
                 text=TASK[1],
                 callback_data="desc %s" % TASK[0]
-            ),
-            InlineKeyboardButton(
-                text="done \xE2\x98\x91",
-                callback_data="done %s" % (
-                    TASK[0]
-                )
             )
         ] for TASK in tasks
     ])
     return {'tasks': tasks, 'kb': keyboard}
+
+
+def pertaskeyboard(msg, tid):
+    keyboard = InlineKeyboardMarkup(inline_keyboard=[
+        [
+            InlineKeyboardButton(
+                text="done \xE2\x98\x91",
+                callback_data="done %s" % (
+                    tid
+                )
+            )
+        ],
+        [
+            InlineKeyboardButton(
+                text=u'back \u25C0\uFE0F',
+                callback_data="back %s" % tid
+            )
+        ]
+    ])
+    return {'kb': keyboard}
+
+
+def mainboard(msg, ormsg):
+    keyboard = keyboardtasks(msg)['kb']
+    if keyboardtasks(msg)['tasks']:
+        message_text = "Список задач:"
+    else:
+        message_text = "Нет активных задач."
+    try:
+        bot.editMessageText(ormsg, text=message_text,
+                            parse_mode='markdown',
+                            reply_markup=keyboard
+                            )
+    except Exception as e:
+        logger.debug('Exception: %s' % e)
+        pass
 
 
 def basekeyboard(chat_id, keyboard, tasks):
@@ -187,8 +217,8 @@ def handle(msg):
         except IndexError:
             starttime = datetime.now() - timedelta(seconds=5)
         task['start'] = starttime
-        task['stop'] = datetime.now() + timedelta(hours=24)
-        task['notify_need'] = True
+        task['stop'] = datetime.now() + timedelta(days=365)
+        task['notify_need'] = False
         task['notify_send'] = False
         task['user_id'] = getuserid(getinfo(msg['from']))
         cursor.execute(insert_query, task)
@@ -206,36 +236,25 @@ def on_callback_query(msg):
     ormsg = telepot.origin_identifier(msg)
     job, taskid = query_data.split(" ")
     if job == "done":
-        logger.debug('Callback Query: %s %s %s' % (
-            query_id, from_id, query_data))
         markasdone(taskid)
-        keyboard = keyboardtasks(msg)['kb']
-        if keyboardtasks(msg)['tasks']:
-            message_text = "Список задач:"
-        else:
-            message_text = "Нет активных задач."
-        try:
-            bot.editMessageText(ormsg, text=message_text,
-                                parse_mode='markdown',
-                                reply_markup=keyboard
-                                )
-        except:
-            pass
+        mainboard(msg, ormsg)
     elif job == "desc":
-        logger.debug(query_data)
         cursor.execute(get_task_by_id, {'id': taskid})
         task_data = cursor.fetchall()
-        keyboard = keyboardtasks(msg)['kb']
+        keyboard = pertaskeyboard(msg, taskid)['kb']
         try:
-            bot.editMessageText(ormsg, text='*%s*\n_%s_' % (
+            bot.editMessageText(ormsg, text='Задача:\n\n*%s*\n_%s_' % (
                 task_data[0][1],
                 task_data[0][2],
             ),
                 parse_mode='markdown',
                 reply_markup=keyboard
             )
-        except:
+        except Exception as e:
+            logger.debug('Exception: %s' % e)
             pass
+    elif job == "back":
+        mainboard(msg, ormsg)
 
 
 class Task(object):
