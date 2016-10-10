@@ -12,3 +12,8 @@ PR = {
         'text': 'high'
     }
 }
+
+PRA = {
+    'raise': '\xF0\x9F\x94\xBA',
+    'decrease': '\xF0\x9F\x94\xBB'
+}

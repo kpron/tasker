@@ -12,7 +12,7 @@ from telepot.namedtuple import (
     InlineKeyboardMarkup, InlineKeyboardButton)
 import psycopg2
 from contrib.sqlquery import *
-from contrib.pr import PR
+from contrib.pr import PR, PRA
 
 parser = SafeConfigParser()
 parser.read('config.ini')
@@ -148,13 +148,13 @@ def pertaskeyboard(msg, tid, prior):
 def genprbt(level, pr, tid):
     if pr >= 2 and level == 'down':
         button = [InlineKeyboardButton(
-            text='decrease',
+            text=PRA['decrease'],
             callback_data="down %s" % tid
         )]
         return button
     elif pr <= 2 and level == 'top':
         button = [InlineKeyboardButton(
-            text='raise',
+            text=PRA['raise'],
             callback_data="up %s" % tid
         )]
         return button
