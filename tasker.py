@@ -3,17 +3,20 @@
 
 import time
 import os
+import sys
 from datetime import datetime, timedelta
 import logging
 from ConfigParser import SafeConfigParser
 import telepot
 from telepot.namedtuple import (
     ReplyKeyboardMarkup, KeyboardButton,
-    InlineKeyboardMarkup, InlineKeyboardButton,
-    ForceReply)
+    InlineKeyboardMarkup, InlineKeyboardButton)
 import psycopg2
 from contrib.sqlquery import *
 from contrib.pr import PR, PRA
+
+reload(sys)
+sys.setdefaultencoding('utf8')
 
 parser = SafeConfigParser()
 parser.read('config.ini')
@@ -137,16 +140,10 @@ def pertaskeyboard(msg, tid, prior):
         ] + genprbt('top', prior, tid),
         [
             InlineKeyboardButton(
-                text=u'edit',
-                callback_data="edit %s" % tid
-            )
-        ] + genprbt('down', prior, tid),
-        [
-            InlineKeyboardButton(
                 text=u'back \u25C0\uFE0F',
                 callback_data="back %s" % tid
             )
-        ]
+        ] + genprbt('down', prior, tid)
     ])
     return {'kb': keyboard}
 
@@ -231,6 +228,15 @@ def prshift(direct, tid):
     logger.debug('PR CHANGED for - %s' % tid)
 
 
+def getsametask(userid, tname):
+    cursor.execute(get_same_query, {'userid': userid, 'tname': tname})
+    result = cursor.fetchall()
+    if result:
+        return {'id': result[0][0], 'descr': result[0][2]}
+    else:
+        return False
+
+
 def handle(msg):
     chat_id = msg['chat']['id']
     command = msg['text']
@@ -265,10 +271,6 @@ def handle(msg):
         tasks = keyboardtasks(msg)['tasks']
         keyboard = keyboardtasks(msg)['kb']
         basekeyboard(chat_id, keyboard, tasks)
-    elif command.startswith('/edit '):
-        cmd, tid = msg['text'].split(' ', 1)
-        answer = 'Edit %s' % tid
-        bot.sendMessage(chat_id, answer)
     else:
         mlist = msg['text'].split('\n', 1)
         task = {}
@@ -290,9 +292,22 @@ def handle(msg):
         task['notify_need'] = False
         task['notify_send'] = False
         task['user_id'] = getuserid(getinfo(msg['from']))
-        cursor.execute(insert_query, task)
-        conn.commit()
-        logger.debug('%s task created' % task['name'])
+        sameid = getsametask(task['user_id'], task['name'])
+        if sameid:
+            updated = '%s\n%s' % (
+                sameid['descr'],
+                task['descr']
+            )
+            cursor.execute(update_descr_query, {
+                'descr': updated,
+                'id': sameid['id']
+            })
+            conn.commit()
+            logger.debug('%s task updated' % task['name'])
+        else:
+            cursor.execute(insert_query, task)
+            conn.commit()
+            logger.debug('%s task created' % task['name'])
         tasks = keyboardtasks(msg)['tasks']
         keyboard = keyboardtasks(msg)['kb']
         basekeyboard(chat_id, keyboard, tasks)
@@ -317,9 +332,6 @@ def on_callback_query(msg):
     elif job == "down":
         prshift('down', taskid)
         descboard(taskid, msg, ormsg)
-    elif job == "edit":
-        hui = 'Хуй знает, как это делать.'
-        bot.answerCallbackQuery(query_id, text=hui, show_alert=True)
 
 
 class Task(object):

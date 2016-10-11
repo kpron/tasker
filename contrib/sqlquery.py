@@ -93,3 +93,21 @@ all_high_query = """
                   and
                   done = False
 ;"""
+
+get_same_query = """
+               SELECT *
+               FROM tasks
+               WHERE
+                  user_id = %(userid)s
+                  and
+                  name = %(tname)s
+                  and
+                  done = False
+;"""
+
+update_descr_query = """
+             UPDATE tasks
+             SET descr = %(descr)s
+             WHERE
+                 id = %(id)s
+;"""
