@@ -84,3 +84,12 @@ pr_up_query = """
              WHERE
                  id = %(id)s
 ;"""
+
+all_high_query = """
+               SELECT user_id
+               FROM tasks
+               WHERE
+                  pr = 3
+                  and
+                  done = False
+;"""

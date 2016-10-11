@@ -9,7 +9,8 @@ from ConfigParser import SafeConfigParser
 import telepot
 from telepot.namedtuple import (
     ReplyKeyboardMarkup, KeyboardButton,
-    InlineKeyboardMarkup, InlineKeyboardButton)
+    InlineKeyboardMarkup, InlineKeyboardButton,
+    ForceReply)
 import psycopg2
 from contrib.sqlquery import *
 from contrib.pr import PR, PRA
@@ -113,7 +114,6 @@ def markasdone(taskid):
 
 def keyboardtasks(msg):
     tasks = getasks(msg)
-    logger.debug(tasks)
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
         [
             InlineKeyboardButton(
@@ -137,10 +137,16 @@ def pertaskeyboard(msg, tid, prior):
         ] + genprbt('top', prior, tid),
         [
             InlineKeyboardButton(
+                text=u'edit',
+                callback_data="edit %s" % tid
+            )
+        ] + genprbt('down', prior, tid),
+        [
+            InlineKeyboardButton(
                 text=u'back \u25C0\uFE0F',
                 callback_data="back %s" % tid
             )
-        ] + genprbt('down', prior, tid)
+        ]
     ])
     return {'kb': keyboard}
 
@@ -250,7 +256,8 @@ def handle(msg):
                 [
                     KeyboardButton(text='Active tasks')
                 ]
-            ])
+            ],
+            resize_keyboard=True)
         bot.sendMessage(
             chat_id, 'Session has been initiated', reply_markup=markup
         )
@@ -258,6 +265,10 @@ def handle(msg):
         tasks = keyboardtasks(msg)['tasks']
         keyboard = keyboardtasks(msg)['kb']
         basekeyboard(chat_id, keyboard, tasks)
+    elif command.startswith('/edit '):
+        cmd, tid = msg['text'].split(' ', 1)
+        answer = 'Edit %s' % tid
+        bot.sendMessage(chat_id, answer)
     else:
         mlist = msg['text'].split('\n', 1)
         task = {}
@@ -306,6 +317,9 @@ def on_callback_query(msg):
     elif job == "down":
         prshift('down', taskid)
         descboard(taskid, msg, ormsg)
+    elif job == "edit":
+        hui = 'Хуй знает, как это делать.'
+        bot.answerCallbackQuery(query_id, text=hui, show_alert=True)
 
 
 class Task(object):
