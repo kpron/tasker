@@ -48,12 +48,10 @@ while True:
     try:
         current_time = datetime.now()
         cursor.execute(all_high_query)
-        tasks = cursor.fetchall()
-        for user_id in set(tasks):
-            cursor.execute(get_telid, {'user_id': user_id[0]})
-            telid = cursor.fetchall()
+        users = cursor.fetchall()
+        for telid in set(users):
             bot.sendMessage(
-                telid[0][0],
+                telid[0],
                 'У вас есть незакрытые задачи с высшим приоритетом.'
             )
         time.sleep(900)

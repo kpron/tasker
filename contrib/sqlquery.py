@@ -86,12 +86,14 @@ pr_up_query = """
 ;"""
 
 all_high_query = """
-               SELECT user_id
-               FROM tasks
+               SELECT users.telegram_id
+               FROM tasks, users
                WHERE
-                  pr = 3
+                  tasks.pr = 3
                   and
-                  done = False
+                  tasks.done = False
+                  and
+                  users.user_id = tasks.user_id
 ;"""
 
 get_same_query = """
