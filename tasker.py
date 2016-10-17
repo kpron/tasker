@@ -107,6 +107,24 @@ def getasks(msg):
         tasks = [[task[0], task[1], task[2], task[9]] for task in result]
     return tasks
 
+def getsubs(taskid):
+    logger.debug('start GETSUBS')
+    cursor.execute(get_subs_query, {
+        'pid': taskid
+    }
+    )
+    cids = cursor.fetchall()[0]
+    logger.debug(cids)
+    cursor.execute(multyget_task_query, {
+        'ids': cids
+    }
+    )
+    result = cursor.fetchall()
+    if not result:
+        tasks = []
+    else:
+        tasks = [[task[0], task[1], task[2], task[9]] for task in result]
+    return tasks
 
 def markasdone(taskid):
     logger.debug('start MARKASDONE')
@@ -130,6 +148,7 @@ def keyboardtasks(msg):
 
 def pertaskeyboard(msg, tid, prior):
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
+        gensub(tid),
         [
             InlineKeyboardButton(
                 text="done \xE2\x98\x91",
@@ -147,6 +166,59 @@ def pertaskeyboard(msg, tid, prior):
     ])
     return {'kb': keyboard}
 
+def gensub(tid):
+    cursor.execute(get_subs_query, {
+        'pid': tid
+    }
+    )
+    conn.commit()
+    result = cursor.fetchall()
+    if result:
+        button = [InlineKeyboardButton(
+                text="Subtasks",
+                callback_data="sub %s" % tid
+            )]
+    else:
+        button = []
+    return button
+
+def subinfo(taskid, msg, ormsg):
+    cursor.execute(get_subs_query, {'pid': taskid})
+    subs = cursor.fetchall()
+    logger.debug(subs)
+    keyboard = subboard(msg, taskid)['kb']
+    try:
+        bot.editMessageText(ormsg, text='Подзадачи:\n\n*%s*\n_%s_\n\n`%s`' % (
+            'task-data',
+            'task-data',
+            'Приоритет: %s' % taskid
+        ),
+            parse_mode='markdown',
+            reply_markup=keyboard
+        )
+    except Exception as e:
+        logger.debug('Exception: %s' % e)
+        pass
+
+def subboard(msg, tid):
+    tasks = getsubs(tid)
+    keyboard = InlineKeyboardMarkup(inline_keyboard=[
+        [
+            InlineKeyboardButton(
+                text='%s %s' % (TASK[1], PR[TASK[3]]['icon']),
+                callback_data="desc %s" % (
+                    TASK[0]
+                )
+            ) for TASK in tasks
+        ],
+        [
+            InlineKeyboardButton(
+                text=u'MAIN',
+                callback_data="desc %s" % tid
+            )
+        ]
+    ])
+    return {'kb': keyboard}
 
 def genprbt(level, pr, tid):
     if pr >= 2 and level == 'down':
@@ -332,6 +404,9 @@ def on_callback_query(msg):
     elif job == "down":
         prshift('down', taskid)
         descboard(taskid, msg, ormsg)
+    elif job == "sub":
+        subinfo(taskid, msg, ormsg)
+
 
 
 class Task(object):

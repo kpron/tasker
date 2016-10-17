@@ -113,3 +113,26 @@ update_descr_query = """
              WHERE
                  id = %(id)s
 ;"""
+
+get_subs_query = """
+               SELECT *
+               FROM subtasks
+               WHERE
+                  pid = %(pid)s
+;"""
+
+multyget_task_query = """
+                SELECT *
+                FROM tasks
+                WHERE
+                    id in %(ids)s
+                    and
+                    done = False
+;"""
+
+get_parent_query = """
+                 SELECT *
+                 FROM subtasks
+                 WHERE
+                    cid = %(cid)s
+;"""
