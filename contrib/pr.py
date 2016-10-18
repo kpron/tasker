@@ -1,4 +1,8 @@
 PR = {
+    0: {
+        'icon': '\xE2\x9C\x85',
+        'text': 'done'
+    },
     1: {
         'icon': '\xF0\x9F\x92\xA9',
         'text': 'low'

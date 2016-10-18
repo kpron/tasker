@@ -115,13 +115,20 @@ update_descr_query = """
 ;"""
 
 get_subs_query = """
-               SELECT *
+               SELECT cid
                FROM subtasks
                WHERE
                   pid = %(pid)s
 ;"""
 
 multyget_task_query = """
+                SELECT *
+                FROM tasks
+                WHERE
+                    id in %(ids)s
+;"""
+
+multyget_task_query_opened = """
                 SELECT *
                 FROM tasks
                 WHERE
@@ -135,4 +142,21 @@ get_parent_query = """
                  FROM subtasks
                  WHERE
                     cid = %(cid)s
+;"""
+
+get_taskid_by_name = """
+                SELECT id
+                FROM tasks
+                WHERE
+                    name = %(name)s
+                    and
+                    done = False
+;"""
+
+link_query = """
+                INSERT INTO subtasks
+                VALUES (
+                    %(pid)s,
+                    %(cid)s
+                    )
 ;"""
