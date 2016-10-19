@@ -263,7 +263,7 @@ def genprbt(level, pr, tid):
             callback_data="down %s" % tid
         )]
         return button
-    elif pr <= 2 and level == 'top':
+    elif pr <= 3 and level == 'top':
         button = [InlineKeyboardButton(
             text=PRA['raise'],
             callback_data="up %s" % tid
@@ -322,8 +322,8 @@ def prshift(direct, tid):
     task_data = cursor.fetchall()
     prior = task_data[0][9]
     if direct == 'up':
-        if (prior + 1) > 3:
-            logger.debug('pizda break PR>3')
+        if (prior + 1) > 4:
+            logger.debug('pizda break PR>4')
             return 'PR fail'
         QUERY = pr_up_query
     elif direct == 'down':
@@ -437,6 +437,10 @@ def handle(msg):
         task['notify_need'] = False
         task['notify_send'] = False
         task['user_id'] = getuserid(getinfo(msg['from']))
+        if parsedtitle['tag']:
+            task['state'] = 2
+        else:
+            task['state'] = 1
         sameid = getsametask(task['user_id'], task['name'])
         if sameid:
             updated = '%s\n%s' % (

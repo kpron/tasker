@@ -9,6 +9,8 @@ current_query = """
                     user_id = %(user_id)s
                     and
                     done = False
+                    and
+                    state = 1
 ;"""
 
 allcurrent_query = """
@@ -37,9 +39,9 @@ sent_query = """
 insert_query = """
                INSERT
                INTO tasks
-               (name,descr,start,stop,notify_need,notify_send,user_id)
+               (name,descr,start,stop,notify_need,notify_send,user_id,state)
                VALUES
-               (%(name)s, %(descr)s, %(start)s, %(stop)s, %(notify_need)s, %(notify_send)s, %(user_id)s)
+               (%(name)s, %(descr)s, %(start)s, %(stop)s, %(notify_need)s, %(notify_send)s, %(user_id)s, %(state)s)
 ;"""
 
 get_user_by_id = """
@@ -85,11 +87,11 @@ pr_up_query = """
                  id = %(id)s
 ;"""
 
-all_high_query = """
+all_veryhigh_query = """
                SELECT users.telegram_id
                FROM tasks, users
                WHERE
-                  tasks.pr = 3
+                  tasks.pr = 4
                   and
                   tasks.done = False
                   and

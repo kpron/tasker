@@ -12,8 +12,12 @@ PR = {
         'text': 'medium'
     },
     3: {
-        'icon': '\xF0\x9F\x94\xB4',
+        'icon': '\xF0\x9F\x94\xB6',
         'text': 'high'
+    },
+    4: {
+        'icon': '\xF0\x9F\x94\xB4',
+        'text': 'very high'
     }
 }
 

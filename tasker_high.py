@@ -47,7 +47,7 @@ cursor = conn.cursor()
 while True:
     try:
         current_time = datetime.now()
-        cursor.execute(all_high_query)
+        cursor.execute(all_veryhigh_query)
         users = cursor.fetchall()
         for telid in set(users):
             bot.sendMessage(
