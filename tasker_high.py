@@ -13,7 +13,7 @@ parser = SafeConfigParser()
 parser.read('config.ini')
 
 loglevel = parser.get('tasker_high', 'loglevel')
-src_dir = parser.get('tasker_high', 'srs_dir')
+src_dir = parser.get('tasker_high', 'src_dir')
 token = parser.get('tasker-notifier', 'bot_token')
 
 logging.basicConfig(

@@ -24,10 +24,8 @@ parser.read('config.ini')
 exec_dir = os.getcwd() + '/'
 
 # Tasker variables
-inputfile = exec_dir + parser.get('tasker', 'tasksfile')
-outputfile = exec_dir + parser.get('tasker', 'outfile')
 loglevel = parser.get('tasker', 'loglevel')
-src_dir = parser.get('tasker', 'srs_dir')
+src_dir = parser.get('tasker', 'src_dir')
 
 # Notifier variables
 id = parser.get('tasker-notifier', 'telegram_id')
