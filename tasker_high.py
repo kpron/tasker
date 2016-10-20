@@ -18,8 +18,7 @@ token = parser.get('tasker-notifier', 'bot_token')
 
 logging.basicConfig(
     format='%(levelname)s [%(asctime)s]:%(message)s',
-    level=logging.DEBUG,
-    filename='%s/logs/tasker_high.log' % src_dir
+    level=logging.DEBUG
 )
 
 logger = logging.getLogger('tasker_high')

@@ -43,8 +43,7 @@ connstring = "dbname=%s user=%s host=%s password=%s" % (
 
 logging.basicConfig(
     format='%(levelname)s [%(asctime)s]:%(message)s',
-    level=logging.DEBUG,
-    filename='%s/logs/tasker.log' % src_dir
+    level=logging.DEBUG
 )
 logger = logging.getLogger('tasker')
 logger.setLevel(loglevel)
