@@ -295,17 +295,18 @@ def basekeyboard(chat_id, keyboard, tasks):
 
 
 def descboard(taskid, msg, ormsg):
+    logger.debug('DROW descboard')
     cursor.execute(get_task_by_id, {'id': taskid})
     task_data = cursor.fetchall()
     prior = task_data[0][9]
     keyboard = pertaskeyboard(msg, taskid, prior)['kb']
     try:
-        bot.editMessageText(ormsg, text='Задача:\n\n*%s*\n_%s_\n\n`%s`' % (
+        bot.editMessageText(ormsg, text='Задача:\n\n<b>%s</b>\n<i>%s</i>\n\n<code>%s</code>' % (
             task_data[0][1],
             task_data[0][2],
             'Приоритет: %s' % PR[prior]['text']
         ),
-            parse_mode='markdown',
+            parse_mode='html',
             reply_markup=keyboard
         )
     except Exception as e:
@@ -461,6 +462,7 @@ def handle(msg):
 
 
 def on_callback_query(msg):
+    logger.debug('GET CALLBACK - %s' % msg)
     query_id, from_id, query_data = telepot.glance(
         msg, flavor='callback_query'
     )
