@@ -5,3 +5,5 @@ __pucache__/*
 *.pid
 *.sql
 config.ini
+supervisord.conf
+
