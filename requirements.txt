@@ -1,3 +1,4 @@
 PyYAML
 supervisor
 telepot
+setuptools
