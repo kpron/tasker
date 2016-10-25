@@ -3,3 +3,4 @@ supervisor
 telepot
 setuptools>=28.6.1
 urllib3
+psycopg2
