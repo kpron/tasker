@@ -273,9 +273,9 @@ def genprbt(level, pr, tid):
 def mainboard(msg, ormsg):
     keyboard = keyboardtasks(msg)['kb']
     if keyboardtasks(msg)['tasks']:
-        message_text = "Список задач:"
+        message_text = "Список задач: (develop)"
     else:
-        message_text = "Нет активных задач."
+        message_text = "Нет активных задач. (develop)"
     try:
         bot.editMessageText(ormsg, text=message_text,
                             parse_mode='markdown',
