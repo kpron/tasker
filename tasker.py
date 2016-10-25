@@ -402,6 +402,9 @@ def handle(msg):
             keyboard=[
                 [
                     KeyboardButton(text='Active tasks')
+                ],
+                [   
+                    KeyboardButton(text='Develop version')
                 ]
             ],
             resize_keyboard=True)
