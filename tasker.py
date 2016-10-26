@@ -14,7 +14,7 @@ from telepot.namedtuple import (
 import psycopg2
 from contrib.sqlquery import *
 from contrib.pr import PR, PRA
-from contrib import devbutton
+from contrib.dev import devbutton
 
 reload(sys)
 sys.setdefaultencoding('utf8')
