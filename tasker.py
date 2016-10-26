@@ -14,6 +14,7 @@ from telepot.namedtuple import (
 import psycopg2
 from contrib.sqlquery import *
 from contrib.pr import PR, PRA
+from contrib import devbutton
 
 reload(sys)
 sys.setdefaultencoding('utf8')
@@ -25,6 +26,7 @@ exec_dir = os.getcwd() + '/'
 
 # Tasker variables
 loglevel = parser.get('tasker', 'loglevel')
+MODE = parser.get('tasker', 'mode')
 
 # Notifier variables
 id = parser.get('tasker-notifier', 'telegram_id')
@@ -378,6 +380,8 @@ def linksubtask(parsedtitle):
         pass
 
 
+
+
 def handle(msg):
     chat_id = msg['chat']['id']
     command = msg['text']
@@ -403,7 +407,7 @@ def handle(msg):
                 [
                     KeyboardButton(text='Active tasks')
                 ]
-            ],
+            ] + devbutton(MODE)
             resize_keyboard=True)
         bot.sendMessage(
             chat_id, 'Session has been initiated', reply_markup=markup
