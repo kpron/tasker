@@ -407,7 +407,7 @@ def handle(msg):
                 [
                     KeyboardButton(text='Active tasks')
                 ]
-            ] + devbutton(MODE)
+            ] + devbutton(MODE),
             resize_keyboard=True)
         bot.sendMessage(
             chat_id, 'Session has been initiated', reply_markup=markup
