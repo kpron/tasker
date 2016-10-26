@@ -25,7 +25,6 @@ exec_dir = os.getcwd() + '/'
 
 # Tasker variables
 loglevel = parser.get('tasker', 'loglevel')
-src_dir = parser.get('tasker', 'src_dir')
 
 # Notifier variables
 id = parser.get('tasker-notifier', 'telegram_id')
