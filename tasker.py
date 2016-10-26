@@ -299,8 +299,9 @@ def descboard(taskid, msg, ormsg):
     task_data = cursor.fetchall()
     prior = task_data[0][9]
     keyboard = pertaskeyboard(msg, taskid, prior)['kb']
+    HEAD = 'Задача:\n\n<b>%s</b>\n<i>%s</i>\n\n<code>%s</code>'
     try:
-        bot.editMessageText(ormsg, text='Задача:\n\n<b>%s</b>\n<i>%s</i>\n\n<code>%s</code>' % (
+        bot.editMessageText(ormsg, text=HEAD % (
             task_data[0][1],
             task_data[0][2],
             'Приоритет: %s' % PR[prior]['text']
@@ -402,7 +403,7 @@ def handle(msg):
                 [
                     KeyboardButton(text='Active tasks')
                 ],
-                [   
+                [
                     KeyboardButton(text='Develop version')
                 ]
             ],
