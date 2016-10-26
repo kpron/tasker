@@ -552,10 +552,10 @@ while True:
                 try:
                     bot.sendMessage(
                         task.get_telid(),
-                        "Task stared:\n*%s*\n_%s_" % (
+                        "Task stared:\n<b>%s</b>\n<i>%s</i>" % (
                             task.name, task.descr
                         ),
-                        parse_mode='markdown'
+                        parse_mode='html'
                     )
                 except Exception as sent:
                     logger.error(sent)
