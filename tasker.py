@@ -25,7 +25,6 @@ exec_dir = os.getcwd() + '/'
 
 # Tasker variables
 loglevel = parser.get('tasker', 'loglevel')
-src_dir = parser.get('tasker', 'src_dir')
 
 # Notifier variables
 id = parser.get('tasker-notifier', 'telegram_id')
@@ -273,9 +272,9 @@ def genprbt(level, pr, tid):
 def mainboard(msg, ormsg):
     keyboard = keyboardtasks(msg)['kb']
     if keyboardtasks(msg)['tasks']:
-        message_text = "Список задач:"
+        message_text = "Список задач: (develop)"
     else:
-        message_text = "Нет активных задач."
+        message_text = "Нет активных задач. (develop)"
     try:
         bot.editMessageText(ormsg, text=message_text,
                             parse_mode='markdown',
@@ -300,8 +299,9 @@ def descboard(taskid, msg, ormsg):
     task_data = cursor.fetchall()
     prior = task_data[0][9]
     keyboard = pertaskeyboard(msg, taskid, prior)['kb']
+    HEAD = 'Задача:\n\n<b>%s</b>\n<i>%s</i>\n\n<code>%s</code>'
     try:
-        bot.editMessageText(ormsg, text='Задача:\n\n<b>%s</b>\n<i>%s</i>\n\n<code>%s</code>' % (
+        bot.editMessageText(ormsg, text=HEAD % (
             task_data[0][1],
             task_data[0][2],
             'Приоритет: %s' % PR[prior]['text']
@@ -402,6 +402,9 @@ def handle(msg):
             keyboard=[
                 [
                     KeyboardButton(text='Active tasks')
+                ],
+                [
+                    KeyboardButton(text='Develop version')
                 ]
             ],
             resize_keyboard=True)
@@ -549,10 +552,10 @@ while True:
                 try:
                     bot.sendMessage(
                         task.get_telid(),
-                        "Task stared:\n*%s*\n_%s_" % (
+                        "Task stared:\n<b>%s</b>\n<i>%s</i>" % (
                             task.name, task.descr
                         ),
-                        parse_mode='markdown'
+                        parse_mode='html'
                     )
                 except Exception as sent:
                     logger.error(sent)
