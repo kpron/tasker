@@ -425,7 +425,7 @@ def handle(msg):
                     text='Supervisor http',
                     url='http://mocks.lol:%s' % SUPER_PORT
                 )
-            ] for TASK in sorted(tasks, key=lambda x: x[3], reverse=True)
+            ]
         ])
         bot.sendMessage(chat_id, message_text, reply_markup=keyboard)
     else:
