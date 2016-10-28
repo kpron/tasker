@@ -1,3 +1,6 @@
+from telepot.namedtuple import KeyboardButton
+
+
 def devbutton(version):
     if version == 'develop':
         button = [
