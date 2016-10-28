@@ -2,7 +2,7 @@ def devbutton(version):
     if version == 'develop':
         button = [
             [
-                KeyboardButton(text='Develop version.')
+                KeyboardButton(text='Develop')
             ]
         ]
     else:
