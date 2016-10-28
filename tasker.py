@@ -27,6 +27,7 @@ exec_dir = os.getcwd() + '/'
 # Tasker variables
 loglevel = parser.get('tasker', 'loglevel')
 MODE = parser.get('tasker', 'mode')
+SUPER_PORT = parser.get('tasker', 'super_port')
 
 # Notifier variables
 id = parser.get('tasker-notifier', 'telegram_id')
@@ -416,6 +417,17 @@ def handle(msg):
         tasks = keyboardtasks(msg)['tasks']
         keyboard = keyboardtasks(msg)['kb']
         basekeyboard(chat_id, keyboard, tasks)
+    elif command == 'Develop' and MODE == 'develop':
+        message_text = 'Develop keyboard'
+        keyboard = InlineKeyboardMarkup(inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text='Supervisor http',
+                    url='http://mocks.lol:%s' % SUPER_PORT
+                )
+            ]
+        ])
+        bot.sendMessage(chat_id, message_text, reply_markup=keyboard)
     else:
         mlist = msg['text'].split('\n', 1)
         task = {}
