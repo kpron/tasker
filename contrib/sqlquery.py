@@ -140,7 +140,7 @@ multyget_task_query_opened = """
 ;"""
 
 get_parent_query = """
-                 SELECT *
+                 SELECT pid
                  FROM subtasks
                  WHERE
                     cid = %(cid)s
@@ -161,4 +161,42 @@ link_query = """
                     %(pid)s,
                     %(cid)s
                     )
+;"""
+
+set_state = """
+             UPDATE tasks
+             SET state = %(state)s
+             WHERE
+                 id = %(tid)s
+;"""
+
+loop_check_query = """
+                SELECT *
+                FROM subtasks
+                WHERE
+                    cid = %(pid)s
+                    and
+                    pid = %(cid)s
+;"""
+
+add_repeat = """
+            INSERT INTO repeat_tasks
+            VALUES (
+                %(tid)s,
+                0
+                )
+;"""
+
+update_repeat = """
+             UPDATE repeat_tasks
+             SET state = 1
+             WHERE
+                 id = %(tid)s
+;"""
+
+get_repeat = """
+                SELECT *
+                FROM repeat_tasks
+                WHERE
+                    id = %(tid)s
 ;"""
