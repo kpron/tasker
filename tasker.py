@@ -143,7 +143,8 @@ def getsubs(taskid):
                 task[0],
                 task[1],
                 task[2],
-                task[9] if not task[8] else 0
+                task[9] if not task[8] else 0,
+                isrepeadly(task[0])
             ] for task in result
         ]
     return tasks
@@ -264,7 +265,7 @@ def subboard(msg, tid):
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
         [
             InlineKeyboardButton(
-                text='%s %s' % (TASK[1], PR[TASK[3]]['icon']),
+                text='%s %s %s' % (TASK[1], PR[TASK[3]]['icon'], TASK[4]),
                 callback_data="desc %s" % (
                     TASK[0]
                 )
