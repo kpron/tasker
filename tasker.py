@@ -14,6 +14,7 @@ from telepot.namedtuple import (
 import psycopg2
 from contrib.sqlquery import *
 from contrib.pr import PR, PRA
+from contrib.tags import TAGS
 from contrib.dev.devbutton import devbutton
 
 reload(sys)
@@ -103,8 +104,21 @@ def getasks(msg):
     if not result:
         tasks = []
     else:
-        tasks = [[task[0], task[1], task[2], task[9]] for task in result]
+        tasks = [
+            [task[0], task[1], task[2], task[9], isrepeadly(task[0])]
+            for task in result
+        ]
+    logger.debug('TASKS :\n%s' % tasks)
     return tasks
+
+
+def isrepeadly(tid):
+    cursor.execute(get_repeat, {'tid': tid})
+    result = cursor.fetchall()
+    if result:
+        return '\xF0\x9F\x94\x84'
+    else:
+        return ''
 
 
 def getsubs(taskid):
@@ -147,7 +161,7 @@ def keyboardtasks(msg):
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
         [
             InlineKeyboardButton(
-                text='%s %s' % (TASK[1], PR[TASK[3]]['icon']),
+                text='%s %s %s' % (TASK[1], PR[TASK[3]]['icon'], TASK[4]),
                 callback_data='desc %s' % TASK[0]
             )
         ] for TASK in sorted(tasks, key=lambda x: x[3], reverse=True)
@@ -173,12 +187,16 @@ def gendone(tid):
     if result:
         button = []
     else:
+        pid = get_parent(tid)
+        if pid:
+            qdata = "subdone %s_%s" % (tid, pid)
+            logger.debug('QDATA - %s' % qdata)
+        else:
+            qdata = "done %s" % tid
         button = [
             InlineKeyboardButton(
                 text="done \xE2\x98\x91",
-                callback_data="done %s" % (
-                    tid
-                )
+                callback_data=qdata
             )
         ]
     return button
@@ -196,6 +214,16 @@ def pertaskeyboard(msg, tid, prior):
         ] + genprbt('down', prior, tid)
     ])
     return {'kb': keyboard}
+
+
+def get_parent(tid):
+    cursor.execute(get_parent_query, {'cid': tid})
+    pid = cursor.fetchall()
+    logger.debug(pid)
+    if pid:
+        return pid[0][0]
+    else:
+        return pid
 
 
 def gensub(tid):
@@ -346,25 +374,39 @@ def getsametask(userid, tname):
         return False
 
 
-def gettags(line):
+def getsubtask(line):
+    parsed = {}
     cline = line.split('>', 1)
     logger.debug(cline)
-    parsed = {}
     parsed['name'] = cline[0].strip()
     try:
-        parsed['tag'] = cline[1].strip()
+        parsed['sub'] = cline[1].strip()
     except IndexError:
-        parsed['tag'] = ''
+        parsed['sub'] = ''
     logger.debug(parsed)
     return parsed
 
 
+def loop_check(pid, cid):
+    logger.debug('%s %s' % (pid, cid))
+    data = {'pid': str(pid), 'cid': str(cid)}
+    logger.debug(data)
+    cursor.execute(loop_check_query, data)
+    result = cursor.fetchall()
+    logger.debug(result)
+    if result:
+        logger.debug('Loop linking - block')
+        return True
+    else:
+        return False
+
+
 def linksubtask(parsedtitle):
-    if parsedtitle['tag']:
+    if parsedtitle['sub']:
         subtask = parsedtitle['name']
         cursor.execute(get_taskid_by_name, {'name': subtask})
         subtaskid = cursor.fetchall()[0][0]
-        maintask = parsedtitle['tag']
+        maintask = parsedtitle['sub']
         cursor.execute(get_taskid_by_name, {'name': maintask})
         try:
             maintaskid = cursor.fetchall()[0][0]
@@ -372,15 +414,59 @@ def linksubtask(parsedtitle):
             logger.debug('Parent task not found - %s' % maintask)
             maintaskid = ''
         if maintaskid:
-            cursor.execute(link_query, {
-                'pid': maintaskid,
-                'cid': subtaskid
-            })
-            conn.commit()
+            logger.debug('maintaskid - %s' % maintaskid)
+            logger.debug('subtaskid - %s' % subtaskid)
+            if not loop_check(maintaskid, subtaskid):
+                cursor.execute(link_query, {
+                    'pid': maintaskid,
+                    'cid': subtaskid
+                })
+                cursor.execute(set_state, {
+                    'state': 2,
+                    'tid': subtaskid
+                })
+                conn.commit()
     else:
         pass
 
 
+def gettags(title):
+    tags = []
+    words = title.split(' ')
+    for tag in TAGS.keys():
+        if tag in words:
+            tags.append(tag)
+    return tags
+
+
+def striptags(title, tags):
+    for tag in tags:
+        title = title.replace(tag, '')
+    return title
+
+
+def repeating(tid):
+    logger.debug('ID OF REPEAT TASK - %s' % tid)
+    cursor.execute(get_repeat, {'tid': tid})
+    try:
+        state = cursor.fetchall()[0][1]
+        logger.debug('Current state - %s' % state)
+        cursor.execute(update_repeat, {'tid': tid})
+        conn.commit()
+    except IndexError:
+        cursor.execute(add_repeat, {'tid': tid})
+        conn.commit()
+
+
+def applytags(parsedtitle, tags):
+    for tag in tags:
+        if TAGS[tag]['name'] == 'Repeat':
+            cursor.execute(get_taskid_by_name, {'name': parsedtitle['name']})
+            try:
+                tid = cursor.fetchall()[0][0]
+                repeating(tid)
+            except Exception as e:
+                logger.error(e)
 
 
 def handle(msg):
@@ -432,7 +518,12 @@ def handle(msg):
         mlist = msg['text'].split('\n', 1)
         task = {}
         firstline = mlist[0].strip()
-        parsedtitle = gettags(firstline)
+        tags = gettags(firstline)
+        logger.debug(tags)
+        strippedfline = striptags(firstline, tags)
+        logger.debug('Stripped - %s' % strippedfline)
+        parsedtitle = getsubtask(strippedfline)
+        logger.debug('Parsed title - %s' % parsedtitle)
         task['name'] = parsedtitle['name']
         try:
             task['descr'] = mlist[1].strip()
@@ -451,10 +542,7 @@ def handle(msg):
         task['notify_need'] = False
         task['notify_send'] = False
         task['user_id'] = getuserid(getinfo(msg['from']))
-        if parsedtitle['tag']:
-            task['state'] = 2
-        else:
-            task['state'] = 1
+        task['state'] = 1
         sameid = getsametask(task['user_id'], task['name'])
         if sameid:
             updated = '%s\n%s' % (
@@ -472,6 +560,7 @@ def handle(msg):
             conn.commit()
             logger.debug('%s task created' % task['name'])
         linksubtask(parsedtitle)
+        applytags(parsedtitle, tags)
         tasks = keyboardtasks(msg)['tasks']
         keyboard = keyboardtasks(msg)['kb']
         basekeyboard(chat_id, keyboard, tasks)
@@ -487,6 +576,11 @@ def on_callback_query(msg):
     if job == "done":
         markasdone(taskid)
         mainboard(msg, ormsg)
+    elif job == "subdone":
+        logger.debug('SUBDONE - %s' % taskid)
+        tid, pid = taskid.split("_")
+        markasdone(tid)
+        subinfo(pid, msg, ormsg)
     elif job == "desc":
         descboard(taskid, msg, ormsg)
     elif job == "back":
