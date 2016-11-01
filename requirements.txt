@@ -1,6 +1,6 @@
 PyYAML
 supervisor
 telepot
-setuptools>=28.6.1
-urllib3
+setuptools
+urllib3==1.17
 psycopg2
