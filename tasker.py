@@ -6,7 +6,6 @@ import os
 import sys
 from datetime import datetime, timedelta
 import logging
-from ConfigParser import SafeConfigParser
 import telepot
 from telepot.namedtuple import (
     ReplyKeyboardMarkup, KeyboardButton,
@@ -20,25 +19,23 @@ from contrib.dev.devbutton import devbutton
 reload(sys)
 sys.setdefaultencoding('utf8')
 
-parser = SafeConfigParser()
-parser.read('config.ini')
-
 exec_dir = os.getcwd() + '/'
 
 # Tasker variables
-loglevel = parser.get('tasker', 'loglevel')
-MODE = parser.get('tasker', 'mode')
-SUPER_PORT = parser.get('tasker', 'super_port')
+loglevel = os.environ.get('LOG_LEVEL', 'ERROR')
+MODE = os.environ.get('MODE', 'master')
+SUPER_PORT = os.environ.get('SUPER_PORT', '9001')
 
 # Notifier variables
-id = parser.get('tasker-notifier', 'telegram_id')
-token = parser.get('tasker-notifier', 'bot_token')
+id = os.environ.get('ADMIN_TELEGRAM_ID')
+token = os.environ.get('BOT_TOKEN')
+HTTP_HOST = os.environ.get('HTTP_HOST', 'example.com')
 
 # database variables
-dbhost = parser.get('pgsql', 'host')
-dbname = parser.get('pgsql', 'db')
-dbuser = parser.get('pgsql', 'user')
-dbpassword = parser.get('pgsql', 'password')
+dbhost = os.environ.get('DB_HOST')
+dbname = os.environ.get('DB_NAME')
+dbuser = os.environ.get('DB_USER')
+dbpassword = os.environ.get('DB_PASS')
 
 connstring = "dbname=%s user=%s host=%s password=%s" % (
     dbname, dbuser, dbhost, dbpassword
@@ -510,7 +507,7 @@ def handle(msg):
             [
                 InlineKeyboardButton(
                     text='Supervisor http',
-                    url='http://mocks.lol:%s' % SUPER_PORT
+                    url='http://%s:%s' % (HTTP_HOST, SUPER_PORT)
                 )
             ]
         ])
