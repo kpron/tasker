@@ -1,0 +1,7 @@
+FROM python:2.7
+WORKDIR /tasker
+ADD requirements.txt /tasker
+RUN pip install -r requirements.txt
+ADD contrib /tasker/contrib
+ADD tasker.py /tasker
+CMD [ "python", "./tasker.py" ]

@@ -3,17 +3,14 @@
 
 import time
 import logging
-from ConfigParser import SafeConfigParser
+import os
 from datetime import datetime
 import telepot
 import psycopg2
 from contrib.sqlquery import *
 
-parser = SafeConfigParser()
-parser.read('config.ini')
-
-loglevel = parser.get('tasker_high', 'loglevel')
-token = parser.get('tasker-notifier', 'bot_token')
+loglevel = os.environ.get('LOG_LEVEL', 'ERROR')
+token = os.environ.get('BOT_TOKEN')
 
 logging.basicConfig(
     format='%(levelname)s [%(asctime)s]:%(message)s',
@@ -24,10 +21,10 @@ logger = logging.getLogger('tasker_high')
 logger.setLevel(loglevel)
 
 # database variables
-dbhost = parser.get('pgsql', 'host')
-dbname = parser.get('pgsql', 'db')
-dbuser = parser.get('pgsql', 'user')
-dbpassword = parser.get('pgsql', 'password')
+dbhost = os.environ.get('DB_HOST')
+dbname = os.environ.get('DB_NAME')
+dbuser = os.environ.get('DB_USER')
+dbpassword = os.environ.get('DB_PASS')
 
 connstring = "dbname=%s user=%s host=%s password=%s" % (
     dbname, dbuser, dbhost, dbpassword
