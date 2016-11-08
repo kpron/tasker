@@ -1,10 +1,7 @@
 version: '2.0'
 services:
   tasker:
-    build: 
-      context: .
-      dockerfile: Dockerfile-tasker
-    image: reg.kpron.org:5000/tasker
+    image: tasker
     environment:
       ADMIN_TELEGRAM_ID: 75390371
       BOT_TOKEN: 278117953:AAFEsB8zg4r-XB7vtbPTtHyXXBe6bmD3krM
@@ -22,10 +19,7 @@ services:
       - tasker_db
     restart: always
   tasker_high:
-    build: 
-      context: .
-      dockerfile: Dockerfile-tasker_high
-    image: reg.kpron.org:5000/tasker-high
+    image: tasker-high
     environment:
       BOT_TOKEN: 278117953:AAFEsB8zg4r-XB7vtbPTtHyXXBe6bmD3krM
       DB_HOST: tasker_db
@@ -39,7 +33,4 @@ services:
       - tasker_db
     restart: always
   tasker_db:
-    build:
-      context: .
-      dockerfile: Dockerfile-tasker_db
-    image: reg.kpron.org:5000/tasker-db
+    image: tasker-db
