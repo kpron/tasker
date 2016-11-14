@@ -6,4 +6,4 @@ __pucache__/*
 *.sql
 config.ini
 supervisord.conf
-
+.ropeproject/*
