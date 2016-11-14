@@ -16,6 +16,7 @@ from contrib.pr import PR, PRA
 from contrib.tags import TAGS
 from contrib.dev.devbutton import devbutton
 
+
 reload(sys)
 sys.setdefaultencoding('utf8')
 
@@ -637,6 +638,8 @@ try:
     conn2.autocommit = True
 except:
     print("I am unable to connect to the database (connect2)")
+
+
 cursor = conn.cursor()
 cursor2 = conn2.cursor()
 
@@ -645,6 +648,7 @@ bot.message_loop({
     'callback_query': on_callback_query
 })
 logger.info('kpronbot listening ...')
+
 
 while True:
     try:
