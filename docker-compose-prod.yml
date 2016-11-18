@@ -1,0 +1,39 @@
+version: '2.0'
+services:
+  tasker:
+    image: tasker
+    environment:
+      ADMIN_TELEGRAM_ID: 75390371
+      BOT_TOKEN: 258347547:AAE1qr9D5oVkBsVurQ_EkIod0WYUeHmmKEM
+      DB_HOST: tasker_db
+      DB_NAME: tasker
+      DB_PASS: tasker
+      DB_USER: tasker
+      LOG_LEVEL: ERROR
+      MODE: master
+      SUPER_PORT: 9001
+      HTTP_HOST: mocks.lol
+    links:
+      - tasker_db
+    depends_on: 
+      - tasker_db
+    restart: always
+  tasker_high:
+    image: tasker-high
+    environment:
+      BOT_TOKEN: 258347547:AAE1qr9D5oVkBsVurQ_EkIod0WYUeHmmKEM
+      DB_HOST: tasker_db
+      DB_NAME: tasker
+      DB_PASS: tasker
+      DB_USER: tasker
+      LOG_LEVEL: ERROR
+    links:
+      - tasker_db
+    depends_on: 
+      - tasker_db
+    restart: always
+  tasker_db:
+    image: tasker-db
+    volumes:
+      - /opt/db/tasker:/var/lib/postgresql/data
+
