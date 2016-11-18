@@ -3,14 +3,15 @@
 
 import time
 import logging
-import os
 from datetime import datetime
 import telepot
 import psycopg2
 from contrib.sqlquery import *
+from tasker_settings import Settings
 
-loglevel = os.environ.get('LOG_LEVEL', 'ERROR')
-token = os.environ.get('BOT_TOKEN')
+loglevel = Settings.loglevel
+token = Settings.bot_token
+HTTP_HOST = Settings.http_host
 
 logging.basicConfig(
     format='%(levelname)s [%(asctime)s]:%(message)s',
@@ -21,10 +22,10 @@ logger = logging.getLogger('tasker_high')
 logger.setLevel(loglevel)
 
 # database variables
-dbhost = os.environ.get('DB_HOST')
-dbname = os.environ.get('DB_NAME')
-dbuser = os.environ.get('DB_USER')
-dbpassword = os.environ.get('DB_PASS')
+dbhost = Settings.dbhost
+dbname = Settings.dbname
+dbuser = Settings.dbuser
+dbpassword = Settings.dbpassword
 
 connstring = "dbname=%s user=%s host=%s password=%s" % (
     dbname, dbuser, dbhost, dbpassword

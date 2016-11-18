@@ -15,28 +15,23 @@ from contrib.sqlquery import *
 from contrib.pr import PR, PRA
 from contrib.tags import TAGS
 from contrib.dev.devbutton import devbutton
-
+from tasker_settings import Settings
 
 reload(sys)
 sys.setdefaultencoding('utf8')
 
 exec_dir = os.getcwd() + '/'
 
-# Tasker variables
-loglevel = os.environ.get('LOG_LEVEL', 'ERROR')
-MODE = os.environ.get('MODE', 'master')
-SUPER_PORT = os.environ.get('SUPER_PORT', '9001')
-
-# Notifier variables
-id = os.environ.get('ADMIN_TELEGRAM_ID')
-token = os.environ.get('BOT_TOKEN')
-HTTP_HOST = os.environ.get('HTTP_HOST', 'example.com')
-
-# database variables
-dbhost = os.environ.get('DB_HOST')
-dbname = os.environ.get('DB_NAME')
-dbuser = os.environ.get('DB_USER')
-dbpassword = os.environ.get('DB_PASS')
+loglevel = Settings.loglevel
+MODE = Settings.mode
+SUPER_PORT = Settings.super_port
+id = Settings.admin_id
+token = Settings.bot_token
+HTTP_HOST = Settings.http_host
+dbhost = Settings.dbhost
+dbname = Settings.dbname
+dbuser = Settings.dbuser
+dbpassword = Settings.dbpassword
 
 connstring = "dbname=%s user=%s host=%s password=%s" % (
     dbname, dbuser, dbhost, dbpassword

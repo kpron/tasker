@@ -4,4 +4,5 @@ ADD requirements.txt /tasker
 RUN pip install -r requirements.txt
 ADD contrib /tasker/contrib
 ADD tasker.py /tasker
+ADD tasker_settings.py /tasker
 CMD [ "python", "./tasker.py" ]

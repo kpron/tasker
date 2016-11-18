@@ -34,3 +34,6 @@ services:
     restart: always
   tasker_db:
     image: tasker-db
+    volumes:
+      - /opt/db/tasker:/var/lib/postgresql/data
+
