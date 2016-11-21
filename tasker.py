@@ -196,16 +196,29 @@ def gendone(tid):
     return button
 
 
+def genback(tid):
+    pid = get_parent(tid)
+    if pid:
+        btext = u"Subtasks \u25C0\uFE0F"
+        qdata = "subback %s_%s" % (tid, pid)
+        logger.debug('QDATA - %s' % qdata)
+    else:
+        btext = u"back \u25C0\uFE0F"
+        qdata = "back %s" % tid
+    button = [
+        InlineKeyboardButton(
+            text=btext,
+            callback_data=qdata
+        )
+    ]
+    return button
+
+
 def pertaskeyboard(msg, tid, prior):
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
         gensub(tid),
         gendone(tid) + genprbt('top', prior, tid),
-        [
-            InlineKeyboardButton(
-                text=u'back \u25C0\uFE0F',
-                callback_data="back %s" % tid
-            )
-        ] + genprbt('down', prior, tid)
+        genback(tid) + genprbt('down', prior, tid)
     ])
     return {'kb': keyboard}
 
@@ -577,6 +590,10 @@ def on_callback_query(msg):
         subinfo(pid, msg, ormsg)
     elif job == "desc":
         descboard(taskid, msg, ormsg)
+    elif job == "subback":
+        logger.debug('SUBBACK - %s' % taskid)
+        tid, pid = taskid.split("_")
+        subinfo(pid, msg, ormsg)
     elif job == "back":
         mainboard(msg, ormsg)
     elif job == "up":

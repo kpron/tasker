@@ -2,6 +2,8 @@ version: '2.0'
 services:
   tasker-dev:
     image: tasker:dev
+    networks:
+      - tasker-dev
     environment:
       ADMIN_TELEGRAM_ID: 75390371
       BOT_TOKEN: 278117953:AAFEsB8zg4r-XB7vtbPTtHyXXBe6bmD3krM
@@ -20,6 +22,8 @@ services:
     restart: always
   tasker_high-dev:
     image: tasker-high:dev
+    networks:
+      - tasker-dev
     environment:
       BOT_TOKEN: 278117953:AAFEsB8zg4r-XB7vtbPTtHyXXBe6bmD3krM
       DB_HOST: tasker_db-dev
@@ -34,6 +38,10 @@ services:
     restart: always
   tasker_db-dev:
     image: tasker-db:dev
+    networks:
+      - tasker-dev
     volumes:
       - /opt/db/tasker-dev:/var/lib/postgresql/data
-
+networks:
+  tasker-dev:
+    driver: bridge
