@@ -1,2 +1,2 @@
-worker: python ./tasker.py
-worker: python ./tasker_high.py
+main: python ./tasker.py
+high: python ./tasker_high.py
