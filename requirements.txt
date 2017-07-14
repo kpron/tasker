@@ -1,5 +1,4 @@
 PyYAML
-supervisor
 telepot
 setuptools
 urllib3==1.17
