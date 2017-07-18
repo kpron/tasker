@@ -50,7 +50,7 @@ while True:
                 telid[0],
                 'У вас есть незакрытые задачи с высшим приоритетом.'
             )
-        time.sleep(900)
+        time.sleep(300)
     except Exception as e:
         logger.debug(e)
         exit(e)
