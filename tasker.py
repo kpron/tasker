@@ -651,6 +651,7 @@ bot.message_loop({
     'chat': handle,
     'callback_query': on_callback_query
 })
+bot.sendMessage(id, 'tasker started - %s' % datetime.now())
 logger.info('kpronbot listening ...')
 
 
