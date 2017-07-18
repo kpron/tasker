@@ -14,6 +14,7 @@ import psycopg2
 from contrib.sqlquery import *
 from contrib.pr import PR, PRA
 from contrib.tags import TAGS
+from contrib.dateparser import dateparse
 from contrib.dev.devbutton import devbutton
 from tasker_settings import Settings
 
@@ -514,7 +515,7 @@ def handle(msg):
         ])
         bot.sendMessage(chat_id, message_text, reply_markup=keyboard)
     else:
-        mlist = msg['text'].split('\n', 1)
+        mlist = msg['text'].split('\n')
         task = {}
         firstline = mlist[0].strip()
         tags = gettags(firstline)
@@ -524,22 +525,23 @@ def handle(msg):
         parsedtitle = getsubtask(strippedfline)
         logger.debug('Parsed title - %s' % parsedtitle)
         task['name'] = parsedtitle['name']
+        task['notify_need'] = False
+        task['notify_send'] = False
         try:
             task['descr'] = mlist[1].strip()
         except IndexError:
             task['descr'] = ''
         try:
-            start = mlist[2].strip()
-            if start == '1':
-                starttime = datetime.now() + timedelta(hours=1)
+            start = dateparse(mlist[2].strip())
+            if start:
+                starttime = datetime.now() + timedelta(minutes=start)
+                task['notify_need'] = True
             else:
                 starttime = datetime.now() - timedelta(seconds=5)
         except IndexError:
             starttime = datetime.now() - timedelta(seconds=5)
         task['start'] = starttime
         task['stop'] = datetime.now() + timedelta(days=365)
-        task['notify_need'] = False
-        task['notify_send'] = False
         task['user_id'] = getuserid(getinfo(msg['from']))
         task['state'] = 1
         sameid = getsametask(task['user_id'], task['name'])
