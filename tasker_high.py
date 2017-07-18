@@ -21,20 +21,10 @@ logging.basicConfig(
 logger = logging.getLogger('tasker_high')
 logger.setLevel(loglevel)
 
-# database variables
-dbhost = Settings.dbhost
-dbname = Settings.dbname
-dbuser = Settings.dbuser
-dbpassword = Settings.dbpassword
-
-connstring = "dbname=%s user=%s host=%s password=%s" % (
-    dbname, dbuser, dbhost, dbpassword
-)
-
 bot = telepot.Bot(token)
 
 try:
-    conn = psycopg2.connect(connstring)
+    conn = psycopg2.connect(Settings.dbstring)
     conn.autocommit = True
 except:
     print("I am unable to connect to the database (connect1)")

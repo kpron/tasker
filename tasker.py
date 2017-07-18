@@ -28,14 +28,6 @@ SUPER_PORT = Settings.super_port
 id = Settings.admin_id
 token = Settings.bot_token
 HTTP_HOST = Settings.http_host
-dbhost = Settings.dbhost
-dbname = Settings.dbname
-dbuser = Settings.dbuser
-dbpassword = Settings.dbpassword
-
-connstring = "dbname=%s user=%s host=%s password=%s" % (
-    dbname, dbuser, dbhost, dbpassword
-)
 
 logging.basicConfig(
     format='%(levelname)s [%(asctime)s]:%(message)s',
@@ -641,12 +633,12 @@ class Task(object):
 
 
 try:
-    conn = psycopg2.connect(connstring)
+    conn = psycopg2.connect(Settings.dbstring)
     conn.autocommit = True
 except:
     print("I am unable to connect to the database (connect1)")
 try:
-    conn2 = psycopg2.connect(connstring)
+    conn2 = psycopg2.connect(Settings.dbstring)
     conn2.autocommit = True
 except:
     print("I am unable to connect to the database (connect2)")

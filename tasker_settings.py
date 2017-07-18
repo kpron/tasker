@@ -1,12 +1,11 @@
 import os
-
+import urlparse
 
 class Settings():
     # Database
-    dbhost = os.environ.get('DB_HOST', '127.0.0.1')
-    dbname = os.environ.get('DB_NAME', 'tasker')
-    dbuser = os.environ.get('DB_USER', 'tasker')
-    dbpassword = os.environ.get('DB_PASS', 'tasker')
+    urlparse.uses_netloc.append("postgres")
+    dburl = urlparse.urlparse(os.environ["DATABASE_URL"])
+    dbstring = "dbname=%s user=%s password=%s host=%s port=%s" % (dburl.path[1:], dburl.username, dburl.password, dburl.hostname, dburl.port)
     # Tasker variables
     loglevel = os.environ.get('LOG_LEVEL', 'ERROR')
     mode = os.environ.get('MODE', 'master')
