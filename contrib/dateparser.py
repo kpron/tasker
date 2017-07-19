@@ -21,6 +21,8 @@ def speccalc(pretime):
         return datetime.today().replace(minute=int(pretime[0]))
     elif len(pretime) == 2:
         return datetime.today().replace(hour=int(pretime[0]), minute=int(pretime[1]))
+    elif len(pretime) == 3:
+        return datetime.today().replace(day=int(pretime[0]), hour=int(pretime[1]), minute=(pretime[2]))
     else:
         return datetime.today()
 
