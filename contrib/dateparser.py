@@ -1,3 +1,5 @@
+from datetime import datetime
+
 def parsetype(duestring):
     if duestring.startswith("+"):
         return "plus"
@@ -14,11 +16,22 @@ def timecalc(pretime):
     else:
         return int(0)
 
+def speccalc(pretime):
+    if len(pretime) == 1:
+        return datetime.today().replace(minute=pretime[0])
+    elif len(pretime) == 2:
+        return datetime.today().replace(hour=pretime[0], minute=pretime[1])
+    else:
+        return datetime.today()
+
 def dateparse(duestring):
     duetype = parsetype(duestring)
     if duetype == "plus":
         pretime = duestring[1:].split(".")
-        return timecalc(pretime)
+        return duetype, timecalc(pretime)
+    elif duetype == "spec":
+        pretime = duestring.split(":")
+        return duetype, speccalc(pretime)
     else:
         print("not support")
 

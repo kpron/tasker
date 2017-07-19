@@ -532,9 +532,12 @@ def handle(msg):
         except IndexError:
             task['descr'] = ''
         try:
-            start = dateparse(mlist[2].strip())
-            if start:
+            duetype, start = dateparse(mlist[2].strip())
+            if duetype == "plus":
                 starttime = datetime.now() + timedelta(minutes=start)
+                task['notify_need'] = True
+            elif duetype == "spec":
+                starttime = start
                 task['notify_need'] = True
             else:
                 starttime = datetime.now() - timedelta(seconds=5)
