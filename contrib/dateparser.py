@@ -18,9 +18,9 @@ def timecalc(pretime):
 
 def speccalc(pretime):
     if len(pretime) == 1:
-        return datetime.today().replace(minute=pretime[0])
+        return datetime.today().replace(minute=int(pretime[0]))
     elif len(pretime) == 2:
-        return datetime.today().replace(hour=pretime[0], minute=pretime[1])
+        return datetime.today().replace(hour=int(pretime[0]), minute=int(pretime[1]))
     else:
         return datetime.today()
 
