@@ -29,7 +29,7 @@ def speccalc(pretime):
 def dateparse(duestring):
     duetype = parsetype(duestring)
     if duetype == "plus":
-        pretime = duestring[1:].split(".")
+        pretime = duestring[1:].split(":")
         return duetype, timecalc(pretime)
     elif duetype == "spec":
         pretime = duestring.split(":")
