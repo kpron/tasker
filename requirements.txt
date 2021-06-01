@@ -1,5 +1,5 @@
 PyYAML
 telepot
 setuptools
-urllib3==1.17
+urllib3==1.26.5
 psycopg2
